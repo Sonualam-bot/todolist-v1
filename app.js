@@ -1,79 +1,74 @@
+//requring the packages that we just installed
 const express = require("express");
 const bodyParser = require("body-parser");
 
+//requiring the date.js file
+const date = require(__dirname + "/date.js");
 
+//here we are requring our app through express
 const app = express();
 
-var items = ["Buy Food", "Cook Food", "Eat Food"];
+const items = ["But Food", "Cook Food", "Eat Food"];
 
-//to use ejs as it's view engine
+//empty array to store work route entries
+const workItems = [];
+
+//using ejs view engine in our site
 app.set("view engine", "ejs");
 
-//using body parser to make the post request
+//using the body parser
 app.use(bodyParser.urlencoded({ extended: true }));
 
+//to tell express to serve styles.css file as a static resource
+app.use(express.static("public"));
+
+//here we are defining the route location for our site
 app.get("/", function (req, res) {
-    // res.send("Helllo")
 
-    var today = new Date();
-    var currentDay = today.getDay();
-    // var day = "";
-
-    // //to check what day it is
-    // switch (currentDay) {
-    //     case 0:
-    //         day = "Sunday";
-    //         break;
-    //     case 0:
-    //         day = "Monday";
-    //         break;
-    //     case 0:
-    //         day = "Tuesday";
-    //         break;
-    //     case 0:
-    //         day = "Wednesday";
-    //         break;
-    //     case 0:
-    //         day = "THurday";
-    //         break;
-    //     case 0:
-    //         day = "Friday";
-    //         break;
-    //     case 0:
-    //         day = "Saturday";
-    //         break;
-    //     default:
-    //         console.log("Error current day is equal to " + currentDay);
+    const day = date.getDate();
 
 
-    var today = new Date();
-    var options = {
-        weekday: "long",
-        day: "numeric",
-        month: "long"
-    };
-
-    var day = today.toLocaleDateString("en-US", options);
-
-
-
-    res.render("list",
-        {
-            kindOfDay: day,
-            newListItems: items
-        });
+    //placing this code here ensures that after a lot of logic that is being run above only after the logic the message will be loaded
+    res.render("list", { listTitle: day, newListItems: items });;
 
 });
 
+
+//this code catches the value of the new item 
 app.post("/", function (req, res) {
-    var item = req.body.newItem;
 
-    items.push(item);
-    res.redirect("/");
+
+    const item = req.body.newItem;
+
+    if (req.body.list === "Work") {
+        workItems.push(item);
+        res.redirect("/work");
+    } else {
+
+        items.push(item);
+        res.redirect("/");
+
+
+
+    }
+
+
 });
 
+//this is to target our work route 
+app.get("/work", function (req, res) {
+    res.render("list", { listTitle: "Work List", newListItems: workItems });
+});
+
+//this is to post to our work route
+// app.post("/work", function (req, res) {
+//     let item = req.body.newItem;
+//     workItems.push(item);
+//     res.redirect("/work");
+// });
 
 
+//this would ensure our app is accessible on port 3000
 app.listen(3000, function () {
-    console.log("Server started on port 3000");
-})
+    console.log("Server has started on port 3000");
+});
