@@ -95,22 +95,35 @@ app.get("/", function (req, res) {
 app.post("/", function (req, res) {
 
 
-    const item = req.body.newItem;
+    const itemName = req.body.newItem;
 
-    if (req.body.list === "Work") {
-        workItems.push(item);
-        res.redirect("/work");
-    } else {
+    const item = new Item({
+        name: itemName
+    });
 
-        items.push(item);
-        res.redirect("/");
+    item.save();
 
-
-
-    }
-
+    res.redirect("/");
 
 });
+
+
+
+app.post("/delete", function (req, res) {
+    const checkedItemId = req.body.checkbox;
+
+    Item.findByIdAndRemove(checkedItemId, function (err) {
+        if (!err) {
+            console.log("Successfully deleted checked item.");
+
+            //to reflect the deleted and updated list 
+            res.redirect("/");
+        }
+    });
+
+})
+
+
 
 //this is to target our work route 
 app.get("/work", function (req, res) {
