@@ -2,10 +2,11 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 
-
-
 //now require mongoose package
 const mongoose = require("mongoose");
+
+//adding lodash
+const _ = require("lodash");
 
 //here we are requring our app through express
 const app = express();
@@ -52,6 +53,14 @@ const item3 = new Item({
 //now to add all the items into a common array
 const defaultItems = [item1, item2, item3];
 
+//list schema
+const listSchema = {
+    name: String,
+    items: [itemsSchema]
+};
+
+//mongoose model for list schema
+const List = mongoose.model("List", listSchema);
 
 // to insert all this into the db in one go
 // Item.insertMany(defaultItems, function (err) {
@@ -90,20 +99,65 @@ app.get("/", function (req, res) {
     //placing this code here ensures that after a lot of logic that is being run above only after the logic the message will be loaded
 });
 
+//to create custom list
+app.get("/:customListName", function (req, res) {
+    const customListName = _.capitalize(req.params.customListName);
+
+
+    List.findOne({ name: customListName }, function (err, foundList) {
+        if (!err) {
+            if (!foundList) {
+                //create new list
+                const list = new List({
+                    name: customListName,
+                    items: defaultItems
+                });
+                list.save();
+                res.render("/" + customListName);
+            } else {
+                console.log("Exist");
+
+                //show an existing list
+                res.render("list", { listTitle: foundList.name, newListItems: foundList.items });
+            }
+        }
+    })
+
+
+    const list = new List({
+        name: customListName,
+        items: defaultItems
+    });
+
+    list.save();
+
+});
+
 
 //this code catches the value of the new item 
 app.post("/", function (req, res) {
 
 
     const itemName = req.body.newItem;
+    const listName = req.body.list;
 
     const item = new Item({
         name: itemName
     });
 
-    item.save();
+    if (listName === "Today") {
+        item.save();
 
-    res.redirect("/");
+        res.redirect("/");
+    } else {
+        List.findOne({ name: listName }, function (err, foundList) {
+            foundList.items.push(item);
+            foundList.save();
+            res.redirect("/" + listName);
+        })
+    }
+
+
 
 });
 
@@ -111,15 +165,26 @@ app.post("/", function (req, res) {
 
 app.post("/delete", function (req, res) {
     const checkedItemId = req.body.checkbox;
+    const listName = req.body.listName;
 
-    Item.findByIdAndRemove(checkedItemId, function (err) {
-        if (!err) {
-            console.log("Successfully deleted checked item.");
+    if (listName === "Today") {
 
-            //to reflect the deleted and updated list 
-            res.redirect("/");
-        }
-    });
+        Item.findByIdAndRemove(checkedItemId, function (err) {
+            if (!err) {
+                console.log("Successfully deleted checked item.");
+
+                //to reflect the deleted and updated list 
+                res.redirect("/");
+            }
+        });
+    } else {
+        List.findOneAndUpdate({ name: listName }, { $pull: { items: { _id: checkedItemId } } }, function (err, foundList) {
+            if (!err) {
+                res.redirect("/" + listName);
+            }
+        })
+    }
+
 
 })
 
