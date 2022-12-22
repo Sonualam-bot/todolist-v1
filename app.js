@@ -2,7 +2,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 
-mongoose.set('strictQuery', true);
+
 
 //now require mongoose package
 const mongoose = require("mongoose");
@@ -26,6 +26,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 //Now to connect here with a database
+mongoose.set('strictQuery', true);
 mongoose.connect("mongodb+srv://admin-alam:test123@cluster0.46s4yva.mongodb.net/todolistDB", {
     useNewUrlParser: true
 });
