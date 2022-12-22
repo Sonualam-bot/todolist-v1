@@ -12,7 +12,7 @@ const _ = require("lodash");
 
 //here we are requring our app through express
 const app = express();
-
+const port = process.env.PORT || 3000;
 
 
 
@@ -207,6 +207,6 @@ app.get("/work", function (req, res) {
 
 
 //this would ensure our app is accessible on port 3000
-app.listen(3000, function () {
+app.listen(port, function () {
     console.log("Server has started on port 3000");
 });
