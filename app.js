@@ -2,6 +2,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 
+mongoose.set('strictQuery', true);
+
 //now require mongoose package
 const mongoose = require("mongoose");
 
